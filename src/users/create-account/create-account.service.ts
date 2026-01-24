@@ -18,10 +18,15 @@ export class CreateAccountService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    return this.usersRepository.createAndSave({
+    const user = await this.usersRepository.createAndSave({
       name,
       email,
       password: hashedPassword,
     });
+
+    return {
+      ...user,
+      password: undefined,
+    };
   }
 }

@@ -1,4 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Gender } from './enums/gender.enum';
+import { UnitSystem } from './enums/unit-system.enum';
+import { ActivityLevel } from './enums/activity-level.enum';
+import { UserStatus } from './enums/user-status.enum';
 
 @Entity()
 export class User {
@@ -13,4 +17,44 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    nullable: true,
+  })
+  gender: Gender;
+
+  @Column({ nullable: true })
+  age: number;
+
+  @Column({ type: 'float', nullable: true })
+  weight: number;
+
+  @Column({ type: 'float', nullable: true })
+  height: number;
+
+  @Column({
+    type: 'enum',
+    enum: UnitSystem,
+    nullable: true,
+  })
+  unitSystem: UnitSystem;
+
+  @Column({
+    type: 'enum',
+    enum: ActivityLevel,
+    nullable: true,
+  })
+  activityLevel: ActivityLevel;
+
+  @Column({ nullable: true })
+  caloricGoal: number;
+
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.ACCOUNT_CREATED,
+  })
+  status: UserStatus;
 }
