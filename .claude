@@ -1,0 +1,232 @@
+# Padrões de Código do Projeto
+
+## Services
+
+### Estrutura
+- Todo service deve ter **apenas um método público** chamado `execute`
+- A lógica deve ser separada em **pequenos métodos privados** com nomes descritivos
+- Services devem ter no **máximo 200 linhas**
+- Se um service estourar 200 linhas, considere extrair lógica para services separados
+
+### Exemplo de Estrutura
+```typescript
+@Injectable()
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly hashService: HashService,
+  ) {}
+
+  async execute(input: CreateUserInput): Promise<CreateUserOutput> {
+    const user = this.buildUser(input);
+    const hashedPassword = await this.hashPassword(input.password);
+    user.password = hashedPassword;
+
+    await this.validateUser(user);
+    return this.userRepository.create(user);
+  }
+
+  private buildUser(input: CreateUserInput): User {
+    // ...
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    // ...
+  }
+
+  private async validateUser(user: User): Promise<void> {
+    // ...
+  }
+}
+```
+
+## Variáveis
+
+### Regra Geral
+- **SEMpre use `const`** para declarar variáveis
+- **NÃO use `let`** a menos que seja estritamente necessário
+
+### Quando usar `let`
+Apenas em **loops de repetição** onde o valor precisa ser reatribuído:
+```typescript
+// ❌ EVITAR
+let sum = 0;
+sum = sum + 1;
+
+// ✅ USE const
+const sum = total + 1;
+
+// ✅ ACEITÁVEL (loop)
+for (let i = 0; i < array.length; i++) {
+  // ...
+}
+```
+
+## Programação Funcional
+
+### Priorize Métodos Funcionais
+Sempre que possível, use métodos de array funcionais em vez de loops imperativos:
+
+#### `map` - Transformação
+```typescript
+// ✅ BOM
+const userDtos = users.map(user => this.toDto(user));
+
+// ❌ RUIM
+const userDtos = [];
+for (const user of users) {
+  userDtos.push(this.toDto(user));
+}
+```
+
+#### `filter` - Filtragem
+```typescript
+// ✅ BOM
+const activeUsers = users.filter(user => user.isActive);
+
+// ❌ RUIM
+const activeUsers = [];
+for (const user of users) {
+  if (user.isActive) {
+    activeUsers.push(user);
+  }
+}
+```
+
+#### `reduce` - Acumulação/Transformação Complexa
+```typescript
+// ✅ BOM
+const userById = users.reduce((acc, user) => ({
+  ...acc,
+  [user.id]: user
+}), {});
+
+const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
+
+// Agrupamento
+const usersByRole = users.reduce((acc, user) => {
+  const role = user.role;
+  return {
+    ...acc,
+    [role]: [...(acc[role] || []), user]
+  };
+}, {} as Record<string, User[]>);
+```
+
+#### `find` - Busca
+```typescript
+// ✅ BOM
+const admin = users.find(user => user.role === 'admin');
+```
+
+#### `some` / `every` - Validação
+```typescript
+// ✅ BOM
+const hasAdmin = users.some(user => user.role === 'admin');
+const allActive = users.every(user => user.isActive);
+```
+
+### Imutabilidade
+- Não mute arrays ou objetos diretamente
+- Use spread operator e métodos que retornam novos valores
+
+```typescript
+// ✅ BOM
+const newUsers = [...users, newUser];
+const updatedUsers = users.map(user =>
+  user.id === updated.id ? updated : user
+);
+
+// ❌ RUIM
+users.push(newUser);
+user.name = 'new name';
+```
+
+### Encadeamento de Métodos
+```typescript
+// ✅ BOM - encadeamento funcional
+const result = users
+  .filter(user => user.isActive)
+  .map(user => this.toDto(user))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+// ❌ RUIM - múltiplos loops
+const activeUsers = users.filter(user => user.isActive);
+const userDtos = [];
+for (const user of activeUsers) {
+  userDtos.push(this.toDto(user));
+}
+userDtos.sort((a, b) => a.name.localeCompare(b.name));
+```
+
+### Pipes e Composição
+Para operações complexas, considere criar funções puras reutilizáveis:
+
+```typescript
+const sanitizeEmail = (email: string): string =>
+  email.toLowerCase().trim();
+
+const hashPassword = async (password: string): Promise<string> =>
+  bcrypt.hash(password, 10);
+
+const createUser = async (input: CreateUserInput): Promise<User> => {
+  const sanitizedEmail = sanitizeEmail(input.email);
+  const hashedPassword = await hashPassword(input.password);
+  return new User(input.name, sanitizedEmail, hashedPassword);
+};
+```
+
+## Boas Práticas Gerais
+
+### Funções Puras
+- Priorize funções puras (sem efeitos colaterais)
+- Mesmo output para mesmo input
+- Evite mutar parâmetros
+
+### Nomes Descritivos
+```typescript
+// ✅ BOM
+const calculateDailyCaloricExpenditure = (params: Params): number => {
+  // ...
+};
+
+// ❌ RUIM
+const calc = (p: any): any => {
+  // ...
+};
+```
+
+### Early Returns
+```typescript
+// ✅ BOM
+async execute(input: Input): Promise<Output> {
+  if (!input.email) {
+    throw new InvalidEmailError();
+  }
+
+  const user = await this.findUser(input.email);
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  return this.doSomething(user);
+}
+
+// ❌ RUIM
+async execute(input: Input): Promise<Output> {
+  if (input.email) {
+    const user = await this.findUser(input.email);
+    if (user) {
+      return this.doSomething(user);
+    } else {
+      throw new UserNotFoundError();
+    }
+  } else {
+    throw new InvalidEmailError();
+  }
+}
+```
+
+## Validação
+
+Estes padrões serão aplicados em todos os novos códigos e refatorações existentes.

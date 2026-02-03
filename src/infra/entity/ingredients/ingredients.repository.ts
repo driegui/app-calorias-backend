@@ -22,6 +22,12 @@ export class IngredientsRepository {
     });
   }
 
+  async findByIds(ids: number[]): Promise<Ingredient[]> {
+    return this.typeOrmRepository.find({
+      where: ids.map((id) => ({ id })),
+    });
+  }
+
   async findByName(name: string): Promise<Ingredient | null> {
     return this.typeOrmRepository.findOne({ where: { name } });
   }

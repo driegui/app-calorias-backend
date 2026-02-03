@@ -5,10 +5,12 @@ import { UsersController } from '../../../app/users/users.controller';
 import { User } from '../../../app/users/user.model';
 import { UpdateProfileModule } from '../../../app/users/update-profile/update-profile.module';
 import { CalculateCaloricExpenditureService } from '../../../app/users/calculate-caloric-expenditure/calculate-caloric-expenditure.service';
+import { UsersRepository } from './users.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), CreateAccountModule, UpdateProfileModule],
   controllers: [UsersController],
-  providers: [CalculateCaloricExpenditureService],
+  providers: [CalculateCaloricExpenditureService, UsersRepository],
+  exports: [UsersRepository],
 })
 export class UsersModule { }

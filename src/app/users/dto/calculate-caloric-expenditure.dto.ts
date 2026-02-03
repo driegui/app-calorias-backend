@@ -8,7 +8,7 @@ export class CalculateCaloricExpenditureDto {
   @IsNumber()
   @IsPositive()
   @Min(30)
-  @Max(300)
+  @Max(500)
   @Type(() => Number)
   weight: number; // peso em kg
 

@@ -26,6 +26,15 @@ export class RecipesRepository {
     return this.typeOrmRepository.findOne({ where: { name } });
   }
 
+  async findByNameAndCreatorEmail(
+    name: string,
+    creatorEmail: string,
+  ): Promise<Recipe | null> {
+    return this.typeOrmRepository.findOne({
+      where: { name, creatorEmail },
+    });
+  }
+
   async findAll(): Promise<Recipe[]> {
     return this.typeOrmRepository.find();
   }
