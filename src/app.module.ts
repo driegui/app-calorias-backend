@@ -42,7 +42,7 @@ import { ConsumptionLog } from './infra/entity/consumption-logs/consumption-log.
           RecipeIngredient,
           ConsumptionLog,
         ],
-        synchronize: true, // Only for dev!
+        synchronize: false, // Only for dev!
       }),
       inject: [ConfigService],
     }),
