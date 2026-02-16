@@ -11,6 +11,6 @@ import { UsersRepository } from './users.repository';
   imports: [TypeOrmModule.forFeature([User]), CreateAccountModule, UpdateProfileModule],
   controllers: [UsersController],
   providers: [CalculateCaloricExpenditureService, UsersRepository],
-  exports: [UsersRepository],
+  exports: [UsersRepository, TypeOrmModule],
 })
 export class UsersModule { }
